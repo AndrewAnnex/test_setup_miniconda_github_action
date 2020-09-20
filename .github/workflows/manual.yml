@@ -1,0 +1,43 @@
+# This is a basic workflow that is manually triggered
+
+name: Manual workflow
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on: [workflow_dispatch, push, pull_request]
+jobs:
+  test_runner:
+    name: (${{ matrix.python-version }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest", "windows-latest"]
+        python-version: ["3.8"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: setup miniconda
+        uses: conda-incubator/setup-miniconda@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
+          activate-environment: pangeo_test
+          auto-update-conda: true
+          use-only-tar-bz2: true
+      - name: conda info
+        shell: bash -l {0}
+        run: |
+          conda info
+          conda list
+          printenv | sort
+      - name: mamba install packages
+        shell: bash -l {0}
+        run: mamba install jupyterlab
+      - name: conda info again
+        shell: bash -l {0}
+        run: |
+          conda info
+          conda list
+          printenv | sort
